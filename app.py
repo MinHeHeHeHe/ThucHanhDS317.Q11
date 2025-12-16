@@ -9,6 +9,12 @@ from modules import tong_quan, chat_luong_du_lieu, khoa_hoc
 from modules.styles import get_main_css, get_header_css
 from modules.theme_system import get_dynamic_css, get_theme_colors
 
+# Load data via centralized module
+from modules.data_loader import load_train_data, load_courses
+
+# Import course_dashboard
+import course_dashboard as course_dashboard 
+
 # Page configuration
 st.set_page_config(
     page_title="BI MOOCCubeX",
@@ -89,8 +95,23 @@ with st.sidebar:
     selected_tab = st.radio(
         "Navigation",
         ["📊 Tổng quan", "📈 Chất lượng dữ liệu", "📚 Khóa học"],
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        key="main_selected_tab"
     )
+
+    if ('selected_course_id' in st.session_state and st.session_state.selected_course_id is not None and 
+        st.session_state.main_selected_tab != "📚 Khóa học"):
+        st.session_state.selected_course_id = None
+        if 'current_view' in st.session_state:
+            del st.session_state.current_view
+        if 'current_user_id' in st.session_state:
+            st.session_state.current_user_id = None
+        st.rerun()
+
+if 'current_view' not in st.session_state:
+    st.session_state.current_view = None
+if 'selected_course_id' not in st.session_state:
+    st.session_state.selected_course_id = None
 
 # Initialize theme in session state
 if 'theme' not in st.session_state:
@@ -102,12 +123,8 @@ st.markdown(get_dynamic_css(st.session_state.theme), unsafe_allow_html=True)
 st.markdown(get_main_css(st.session_state.theme), unsafe_allow_html=True)
 
 # Load data
-@st.cache_data
-def load_data():
-    df = pd.read_csv('train_validate.csv')
-    return df
-
-df = load_data()
+df_courses = load_courses()
+df = load_train_data()
 
 # Enhanced header with sticky positioning
 header_bg = '#1a202c' if st.session_state.theme == 'Dark' else '#ffffff'
@@ -376,10 +393,12 @@ st.markdown("---")
 # Get current theme
 theme = st.session_state.theme
 
-# Show content based on selected tab
-if selected_tab == "📊 Tổng quan":
+if 'selected_course_id' in st.session_state and st.session_state.selected_course_id is not None:
+    course_dashboard.show()
+
+elif st.session_state.main_selected_tab == "📊 Tổng quan":
     tong_quan.show(df, theme)
-elif selected_tab == "📈 Chất lượng dữ liệu":
+elif st.session_state.main_selected_tab == "📈 Chất lượng dữ liệu":
     chat_luong_du_lieu.show(df)
-elif selected_tab == "📚 Khóa học":
-    khoa_hoc.show(df)
+elif st.session_state.main_selected_tab == "📚 Khóa học":
+    khoa_hoc.show(df_courses)
