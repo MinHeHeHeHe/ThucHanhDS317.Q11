@@ -186,17 +186,17 @@ def show(df, theme='Dark'):
 }}
 .course-code {{
     color: #ffffff;
-    font-weight: 500;
+    font-weight: bold !important;
     font-family: 'Courier New', monospace;
     font-size: 18px;
 }}
 .enrollment-badge {{
     background: linear-gradient(135deg, #2b6cb0 0%, #3182ce 100%);
-    color: #ffffff;
+    color: #ffffff !important;
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 20px;
-    font-weight: 600;
+    font-weight: bold !important;
     display: inline-block;
     box-shadow: 0 2px 8px rgba(43, 108, 176, 0.3);
 }}
