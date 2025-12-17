@@ -76,7 +76,7 @@ def display_user_dashboard(USER_ID: str):
         st.markdown(f"""
         <div class='metric-card'>
             <div class='metric-label'>Thông tin cơ bản</div>
-            <div style='font-size: 14px; line-height: 1.8;'>
+            <div style='font-size: 18px; line-height: 1.8;'>
                 <b>User ID:</b> {user.get('user_id', '-')}<br>
                 <b>Course ID:</b> {user.get('course_id', '-')}<br>
                 <b>Ngày đăng kí:</b> {enroll_time_formatted}<br>
@@ -93,7 +93,7 @@ def display_user_dashboard(USER_ID: str):
         <div class='metric-card'>
             <div class='metric-label'>Video</div>
             <div class='metric-value'>{num_videos}</div>
-            <div style='font-size: 12px; color: #666; margin-top: 8px;'>Đã xem</div>
+            <div style='font-size: 16px; color: #666; margin-top: 8px;'>Đã xem</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -104,7 +104,7 @@ def display_user_dashboard(USER_ID: str):
         <div class='metric-card'>
             <div class='metric-label'>Comment</div>
             <div class='metric-value'>{n_comments}</div>
-            <div style='font-size: 12px; color: #666; margin-top: 8px;'>Số bình luận</div>
+            <div style='font-size: 16px; color: #666; margin-top: 8px;'>Số bình luận</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -115,7 +115,7 @@ def display_user_dashboard(USER_ID: str):
         <div class='metric-card'>
             <div class='metric-label'>Problem</div>
             <div class='metric-value'>{n_attempts}</div>
-            <div style='font-size: 12px; color: #666; margin-top: 8px;'>Đã làm</div>
+            <div style='font-size: 16px; color: #666; margin-top: 8px;'>Đã làm</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -319,8 +319,20 @@ def display_user_dashboard(USER_ID: str):
     st.plotly_chart(fig_active, use_container_width=True)
 
 
-    # CARD : Biểu đồ Donut cho Nhãn Đầu ra (Label)
-    st.subheader("Dự đoán Khả năng Bỏ học")
+    # Cảnh báo khả năng Bỏ học (Label Predict)
+    # if user.get('predict', 0) == 1:
+    #     st.warning("⚠️ Cảnh báo: Học viên này có khả năng sẽ bỏ học!")
+    # else:
+    #     st.success("✅ Học viên này có khả năng hoàn thành khóa học.")
+
+    if user.get('predict', 0) == 1:
+        status_warning =  "⚠️ Cảnh báo: Học viên này có khả năng sẽ bỏ học!"
+    else:
+        status_warning = "✅ Học viên này có khả năng hoàn thành khóa học."
+
+    st.markdown(f"""
+        <div style='font-size: 28px; font-weight: 600; color: #fff; margin-top: 5px;'>{status_warning}</div>
+    """, unsafe_allow_html=True)
 
 
 def navigate_to_user_detail(user_id: str):
@@ -419,7 +431,7 @@ def display_user_list(COURSE_ID):
                 st.markdown(f"🗓️ {user['enroll_time']}")
             with col_view:
                 # Dùng on_click callback để chuyển sang User Dashboard
-                st.button(":material/visibility:", 
+                st.button(":material/more_horiz:", 
                             key=f"user_view_{user['user_id']}_{index}",
                             on_click=lambda uid=user['user_id']: navigate_to_user_detail(uid))
             
@@ -543,8 +555,8 @@ def display_course_dashboard(course, COURSE_ID):
             
             course_users = df_users[df_users['course_id'] == COURSE_ID]
             
-            if not course_users.empty and 'label' in course_users.columns:
-                dropout_counts = course_users['label'].value_counts().reset_index()
+            if not course_users.empty and 'predict' in course_users.columns:
+                dropout_counts = course_users['predict'].value_counts().reset_index()
                 dropout_counts.columns = ['Trạng thái', 'Số lượng']
                 
                 # Map labels (0 -> Không bỏ học, 1 -> Bỏ học)
@@ -564,7 +576,7 @@ def display_course_dashboard(course, COURSE_ID):
                 st.plotly_chart(fig_dropout, use_container_width=True)
                 
             else:
-                st.info("Không có dữ liệu về trạng thái bỏ học (column 'label').")
+                st.info("Không có dữ liệu về trạng thái bỏ học (column 'predict').")
                 
         except Exception as e:
             st.error(f"Lỗi khi vẽ biểu đồ bỏ học: {e}")

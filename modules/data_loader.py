@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 @st.cache_data(ttl=3600)
-def load_users(path: str = "test_P5.csv") -> pd.DataFrame:
+def load_users(path: str = "test_P5_pred.csv") -> pd.DataFrame:
     """Load user activity data from CSV."""
     try:
         return pd.read_csv(path)
