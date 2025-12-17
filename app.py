@@ -100,7 +100,7 @@ with st.sidebar:
     )
 
     if ('selected_course_id' in st.session_state and st.session_state.selected_course_id is not None and 
-        st.session_state.main_selected_tab != "📚 Khóa học"):
+        selected_tab != "📚 Khóa học"):
         st.session_state.selected_course_id = None
         if 'current_view' in st.session_state:
             del st.session_state.current_view
@@ -399,6 +399,6 @@ if 'selected_course_id' in st.session_state and st.session_state.selected_course
 elif st.session_state.main_selected_tab == "📊 Tổng quan":
     tong_quan.show(df, theme)
 elif st.session_state.main_selected_tab == "📈 Chất lượng dữ liệu":
-    chat_luong_du_lieu.show(df)
+    chat_luong_du_lieu.show(df, theme)
 elif st.session_state.main_selected_tab == "📚 Khóa học":
     khoa_hoc.show(df_courses)

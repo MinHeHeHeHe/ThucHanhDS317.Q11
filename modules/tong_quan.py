@@ -89,7 +89,7 @@ def show(df, theme='Dark'):
             paper_bgcolor=bg_color,
             font=dict(color=text_color),
             title=dict(
-                text='Xu hướng học viên',
+                text='Số lượng học viên đăng ký khóa học theo thời gian',
                 font=dict(size=18, color=text_color, family='Arial, sans-serif'),
                 x=0.02,
                 xanchor='left'
@@ -259,20 +259,20 @@ def show(df, theme='Dark'):
         names = []
         
         for p in range(1, selected_phase + 1):
-            phase_label = f'Phase {p}'
+            phase_label = f'Giai đoạn {p}'
             
             if p < selected_phase:
                 # For previous phases, show Label (students who continued)
                 phases.append(phase_label)
                 counts.append(continue_count)
                 colors.append('#4299e1')
-                names.append('Label')
+                names.append('Nhãn')
             else:
                 # For current phase, show Predict (students who dropped out)
                 phases.append(phase_label)
                 counts.append(dropout_count)
                 colors.append('#ed8936')
-                names.append('Predict')
+                names.append('Dự đoán')
         
         # Create bar chart
         fig_bar = go.Figure()
@@ -293,7 +293,7 @@ def show(df, theme='Dark'):
             paper_bgcolor=bg_color,
             font=dict(color=text_color),
             title=dict(
-                text='Số lượng đăng ký khóa học',
+                text='Dự đoán số lượng học viên bỏ học trong giai đoạn',
                 font=dict(size=24, color=text_color, family='Arial, sans-serif'),
                 x=0.02,
                 xanchor='left'
@@ -306,7 +306,7 @@ def show(df, theme='Dark'):
             yaxis=dict(
                 showgrid=True,
                 gridcolor=grid_color,
-                title='Lượt đăng kí',
+                title='Số lượng học viên',
                 titlefont=dict(size=18, color=text_color),
                 tickfont=dict(size=14, color=text_color)
             ),
