@@ -1,3 +1,7 @@
 # Python cache
 __pycache__/
 *.pyc
+*.csv
+df_clean.csv
+df_not_fill.csv
+test_P*_pred.csv
