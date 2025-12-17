@@ -10,7 +10,7 @@ from modules.styles import get_main_css, get_header_css
 from modules.theme_system import get_dynamic_css, get_theme_colors
 
 # Load data via centralized module
-from modules.data_loader import load_train_data, load_courses
+from modules.data_loader import load_train_data, load_courses, load_clean_data
 
 # Import course_dashboard
 import course_dashboard as course_dashboard 
@@ -399,6 +399,6 @@ if 'selected_course_id' in st.session_state and st.session_state.selected_course
 elif st.session_state.main_selected_tab == "📊 Tổng quan":
     tong_quan.show(df, theme)
 elif st.session_state.main_selected_tab == "📈 Chất lượng dữ liệu":
-    chat_luong_du_lieu.show(df, theme)
+    chat_luong_du_lieu.show(load_clean_data(), theme)
 elif st.session_state.main_selected_tab == "📚 Khóa học":
     khoa_hoc.show(df_courses)
