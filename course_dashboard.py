@@ -76,7 +76,7 @@ def display_user_dashboard(USER_ID: str):
         st.markdown(f"""
         <div class='metric-card'>
             <div class='metric-label'>Thông tin cơ bản</div>
-            <div style='font-size: 14px; line-height: 1.8;'>
+            <div style='font-size: 18px; line-height: 1.8;'>
                 <b>User ID:</b> {user.get('user_id', '-')}<br>
                 <b>Course ID:</b> {user.get('course_id', '-')}<br>
                 <b>Ngày đăng kí:</b> {enroll_time_formatted}<br>
@@ -93,7 +93,7 @@ def display_user_dashboard(USER_ID: str):
         <div class='metric-card'>
             <div class='metric-label'>Video</div>
             <div class='metric-value'>{num_videos}</div>
-            <div style='font-size: 12px; color: #666; margin-top: 8px;'>Đã xem</div>
+            <div style='font-size: 16px; color: #666; margin-top: 8px;'>Đã xem</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -104,7 +104,7 @@ def display_user_dashboard(USER_ID: str):
         <div class='metric-card'>
             <div class='metric-label'>Comment</div>
             <div class='metric-value'>{n_comments}</div>
-            <div style='font-size: 12px; color: #666; margin-top: 8px;'>Số bình luận</div>
+            <div style='font-size: 16px; color: #666; margin-top: 8px;'>Số bình luận</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -115,7 +115,7 @@ def display_user_dashboard(USER_ID: str):
         <div class='metric-card'>
             <div class='metric-label'>Problem</div>
             <div class='metric-value'>{n_attempts}</div>
-            <div style='font-size: 12px; color: #666; margin-top: 8px;'>Đã làm</div>
+            <div style='font-size: 16px; color: #666; margin-top: 8px;'>Đã làm</div>
         </div>
         """, unsafe_allow_html=True)
     
@@ -319,8 +319,20 @@ def display_user_dashboard(USER_ID: str):
     st.plotly_chart(fig_active, use_container_width=True)
 
 
-    # CARD : Biểu đồ Donut cho Nhãn Đầu ra (Label)
-    st.subheader("Dự đoán Khả năng Bỏ học")
+    # Cảnh báo khả năng Bỏ học (Label Predict)
+    # if user.get('predict', 0) == 1:
+    #     st.warning("⚠️ Cảnh báo: Học viên này có khả năng sẽ bỏ học!")
+    # else:
+    #     st.success("✅ Học viên này có khả năng hoàn thành khóa học.")
+
+    if user.get('predict', 0) == 1:
+        status_warning =  "⚠️ Cảnh báo: Học viên này có khả năng sẽ bỏ học!"
+    else:
+        status_warning = "✅ Học viên này có khả năng hoàn thành khóa học."
+
+    st.markdown(f"""
+        <div style='font-size: 28px; font-weight: 600; color: #fff; margin-top: 5px;'>{status_warning}</div>
+    """, unsafe_allow_html=True)
 
 
 def navigate_to_user_detail(user_id: str):
@@ -419,7 +431,7 @@ def display_user_list(COURSE_ID):
                 st.markdown(f"🗓️ {user['enroll_time']}")
             with col_view:
                 # Dùng on_click callback để chuyển sang User Dashboard
-                st.button(":material/visibility:", 
+                st.button(":material/more_horiz:", 
                             key=f"user_view_{user['user_id']}_{index}",
                             on_click=lambda uid=user['user_id']: navigate_to_user_detail(uid))
             
@@ -543,8 +555,8 @@ def display_course_dashboard(course, COURSE_ID):
             
             course_users = df_users[df_users['course_id'] == COURSE_ID]
             
-            if not course_users.empty and 'label' in course_users.columns:
-                dropout_counts = course_users['label'].value_counts().reset_index()
+            if not course_users.empty and 'predict' in course_users.columns:
+                dropout_counts = course_users['predict'].value_counts().reset_index()
                 dropout_counts.columns = ['Trạng thái', 'Số lượng']
                 
                 # Map labels (0 -> Không bỏ học, 1 -> Bỏ học)
@@ -564,74 +576,133 @@ def display_course_dashboard(course, COURSE_ID):
                 st.plotly_chart(fig_dropout, use_container_width=True)
                 
             else:
-                st.info("Không có dữ liệu về trạng thái bỏ học (column 'label').")
+                st.info("Không có dữ liệu về trạng thái bỏ học (column 'predict').")
                 
         except Exception as e:
             st.error(f"Lỗi khi vẽ biểu đồ bỏ học: {e}")
 
-    st.subheader("Hành vi học tập theo thời gian")
+    # st.subheader("Hành vi học tập theo thời gian")
 
-    try:
-        df_users = load_users()
-        df_users = df_users[df_users['course_id'] == COURSE_ID]
+    # try:
+    #     df_users = load_users()
+    #     df_users = df_users[df_users['course_id'] == COURSE_ID]
 
-        periods = [0.2, 0.4, 0.6, 0.8, 0.9]
-        video_cols = [f'num_events_P{i}' for i in range(1, 6)]
-        attempt_cols = [f'n_attempts_P{i}' for i in range(1, 6)]
+    #     periods = [0.2, 0.4, 0.6, 0.8, 0.9]
+    #     video_cols = [f'num_events_P{i}' for i in range(1, 6)]
+    #     attempt_cols = [f'n_attempts_P{i}' for i in range(1, 6)]
 
-        # Tính mốc thời gian theo tháng-năm
-        start_date = pd.to_datetime(course['class_start'])
-        duration_days = course.get('class_duration_days', 0)
+    #     # Tính mốc thời gian theo tháng-năm
+    #     start_date = pd.to_datetime(course['class_start'])
+    #     duration_days = course.get('class_duration_days', 0)
 
-        time_labels = []
-        for p in periods:
-            d = start_date + pd.Timedelta(days=int(duration_days * p))
-            time_labels.append(d.strftime('%d/%m/%Y'))
+    #     time_labels = []
+    #     for p in periods:
+    #         d = start_date + pd.Timedelta(days=int(duration_days * p))
+    #         time_labels.append(d.strftime('%d/%m/%Y'))
 
-        df_behavior = pd.DataFrame({
-            "Thời gian": time_labels,
-            "Lượt xem video": df_users[video_cols].sum().values,
-            "Lượt làm bài tập": df_users[attempt_cols].sum().values
-        })
+    #     df_behavior = pd.DataFrame({
+    #         "Thời gian": time_labels,
+    #         "Lượt xem video": df_users[video_cols].sum().values,
+    #         "Lượt làm bài tập": df_users[attempt_cols].sum().values
+    #     })
 
-        fig_line = px.line(
-            df_behavior,
-            x="Thời gian",
-            y=["Lượt xem video", "Lượt làm bài tập"],
-            markers=True
-        )
+    #     fig_line = px.line(
+    #         df_behavior,
+    #         x="Thời gian",
+    #         y=["Lượt xem video", "Lượt làm bài tập"],
+    #         markers=True
+    #     )
 
-        fig_line.update_layout(
-            height=420,
-            yaxis_title="Số lượt",
-            hovermode="x unified"
-        )
+    #     fig_line.update_layout(
+    #         height=420,
+    #         yaxis_title="Số lượt",
+    #         hovermode="x unified"
+    #     )
 
-        st.plotly_chart(fig_line, use_container_width=True)
+    #     st.plotly_chart(fig_line, use_container_width=True)
 
-    except Exception as e:
-        st.warning(f"Không thể vẽ biểu đồ hành vi học tập: {e}")
+    # except Exception as e:
+    #     st.warning(f"Không thể vẽ biểu đồ hành vi học tập: {e}")
 
-    st.subheader("Mức độ tham gia theo giai đoạn (%)")
+    # st.subheader("Mức độ tham gia theo giai đoạn (%)")
 
-    df_percent = df_behavior.copy()
-    df_percent["Video (%)"] = df_percent["Lượt xem video"] / df_percent["Lượt xem video"].max() * 100
-    df_percent["Exercise (%)"] = df_percent["Lượt làm bài tập"] / df_percent["Lượt làm bài tập"].max() * 100
+    # df_percent = df_behavior.copy()
+    # df_percent["Video (%)"] = df_percent["Lượt xem video"] / df_percent["Lượt xem video"].max() * 100
+    # df_percent["Exercise (%)"] = df_percent["Lượt làm bài tập"] / df_percent["Lượt làm bài tập"].max() * 100
 
-    fig_bar = px.bar(
-        df_percent,
+    # fig_bar = px.bar(
+    #     df_percent,
+    #     x="Thời gian",
+    #     y=["Video (%)", "Exercise (%)"],
+    #     barmode="group"
+    # )
+
+    # fig_bar.update_layout(
+    #     yaxis_title="Mức độ (%)",
+    #     height=380
+    # )
+
+    # st.plotly_chart(fig_bar, use_container_width=True)
+
+    # =======================
+    # 3. HÀNH VI HỌC TẬP (CUMULATIVE)
+    # =======================
+    st.subheader("Hành vi học tập tích lũy theo thời gian")
+
+    df_users = df_users[df_users['course_id'] == COURSE_ID]
+
+    video_cols = [f'num_events_P{i}' for i in range(1, 6)]
+    attempt_cols = [f'n_attempts_P{i}' for i in range(1, 6)]
+
+    video_cum = df_users[video_cols].sum()
+    attempt_cum = df_users[attempt_cols].sum()
+
+    start_date = pd.to_datetime(course['class_start'])
+    duration = int(course.get('class_duration_days', 0))
+    percents = [0.2, 0.4, 0.6, 0.8, 0.9]
+
+    time_labels = [
+        (start_date + pd.Timedelta(days=int(duration * p))).strftime('%b %Y')
+        for p in percents
+    ]
+
+    df_cum = pd.DataFrame({
+        "Thời gian": time_labels,
+        "Video (tích lũy)": video_cum.values,
+        "Exercise (tích lũy)": attempt_cum.values
+    })
+
+    fig_cum = px.line(
+        df_cum,
         x="Thời gian",
-        y=["Video (%)", "Exercise (%)"],
+        y=["Video (tích lũy)", "Exercise (tích lũy)"],
+        markers=True
+    )
+    fig_cum.update_layout(height=420, yaxis_title="Tổng lượt", hovermode="x unified")
+    st.plotly_chart(fig_cum, use_container_width=True)
+
+    # =======================
+    # 4. HÀNH VI THEO TỪNG GIAI ĐOẠN (INCREMENTAL)
+    # =======================
+    st.subheader("Mức độ tham gia theo từng giai đoạn")
+
+    video_inc = video_cum.diff().fillna(video_cum.iloc[0])
+    attempt_inc = attempt_cum.diff().fillna(attempt_cum.iloc[0])
+
+    df_inc = pd.DataFrame({
+        "Giai đoạn": ["0–20%", "20–40%", "40–60%", "60–80%", "80–90%"],
+        "Video": video_inc.values,
+        "Exercise": attempt_inc.values
+    })
+
+    fig_inc = px.bar(
+        df_inc,
+        x="Giai đoạn",
+        y=["Video", "Exercise"],
         barmode="group"
     )
-
-    fig_bar.update_layout(
-        yaxis_title="Mức độ (%)",
-        height=380
-    )
-
-    st.plotly_chart(fig_bar, use_container_width=True)
-
+    fig_inc.update_layout(height=380, yaxis_title="Số lượt")
+    st.plotly_chart(fig_inc, use_container_width=True)
 
 
 # --- Hàm điều hướng chính ---
