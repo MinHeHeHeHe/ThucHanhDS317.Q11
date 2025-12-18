@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 
 # Import page modules
-from modules import tong_quan, chat_luong_du_lieu, khoa_hoc
+from modules import tong_quan, chat_luong_du_lieu, khoa_hoc, gioi_thieu, ket_qua_phan_tich_du_doan
 from modules.styles import get_main_css, get_header_css
 from modules.theme_system import get_dynamic_css, get_theme_colors
 
@@ -108,6 +108,15 @@ with st.sidebar:
             st.session_state.current_user_id = None
         st.rerun()
 
+    # Determine current view based on query params
+    # We use query params ?page=intro or ?page=dashboard
+    query_params = st.query_params
+    current_page_param = query_params.get("page", "dashboard")
+    
+    # Logic to sync sidebar visibility
+    # If page=intro, maybe hide sidebar or just keep it? Image shows sidebar might be hidden or just dark background. 
+    # Let's keep sidebar for now but the intro page overlays main content.
+
 if 'current_view' not in st.session_state:
     st.session_state.current_view = None
 if 'selected_course_id' not in st.session_state:
@@ -115,7 +124,7 @@ if 'selected_course_id' not in st.session_state:
 
 # Initialize theme in session state
 if 'theme' not in st.session_state:
-    st.session_state.theme = 'Dark'
+    st.session_state.theme = 'Light'
 
 # Apply dynamic theme CSS
 # Apply dynamic theme CSS
@@ -218,6 +227,9 @@ st.markdown(f"""
     /* Center: Link - Center in flow (or absolute center if desired) */
     .header-center {{
         z-index: 1;
+        display: flex;
+        gap: 20px;
+        align-items: center;
     }}
     
     .sticky-header.scrolled .header-title {{
@@ -245,6 +257,12 @@ st.markdown(f"""
     
     .sticky-header a:hover::after {{
         width: 100%;
+    }}
+    
+    /* Active Link Style */
+    .header-center a.active {{
+        color: #3182ce !important;
+        font-weight: 700 !important;
     }}
 
     /* Right: Theme Button - Absolute Right */
@@ -304,10 +322,14 @@ st.markdown(f"""
 <div class="sticky-header" id="mainHeader">
     <div class="header-content">
         <div class="header-left">
-            <div class="header-title" style="color: {header_text_color} !important; transition: color 0.3s ease;">📊 BI MOOCCubeX</div>
+            <a href="?page=dashboard" target="_self" style="text-decoration: none;">
+                <div class="header-title" style="color: {header_text_color} !important; transition: color 0.3s ease;">📊 BI MOOCCubeX</div>
+            </a>
         </div>
         <div class="header-center">
-             <a href="#" style="color: {header_text_color} !important; transition: color 0.3s ease;">Kết quả phân tích dự đoán</a>
+             <a href="?page=intro" target="_self" class="{ 'active' if current_page_param == 'intro' else '' }" style="color: {header_text_color} !important; transition: color 0.3s ease;">Giới thiệu</a>
+             <span style="color: {header_text_color}; opacity: 0.5;">|</span>
+             <a href="?page=prediction_results" target="_self" class="{ 'active' if current_page_param == 'prediction_results' else '' }" style="color: {header_text_color} !important; transition: color 0.3s ease;">Kết quả phân tích dự đoán</a>
         </div>
         <div id="theme-btn-placeholder"></div>
     </div>
@@ -393,12 +415,18 @@ st.markdown("---")
 # Get current theme
 theme = st.session_state.theme
 
-if 'selected_course_id' in st.session_state and st.session_state.selected_course_id is not None:
-    course_dashboard.show()
-
-elif st.session_state.main_selected_tab == "📊 Tổng quan":
-    tong_quan.show(df, theme)
-elif st.session_state.main_selected_tab == "📈 Chất lượng dữ liệu":
-    chat_luong_du_lieu.show(load_clean_data(), theme)
-elif st.session_state.main_selected_tab == "📚 Khóa học":
-    khoa_hoc.show(df_courses)
+# Main App Logic based on Page Param
+if current_page_param == "intro":
+    gioi_thieu.show(st.session_state.theme)
+elif current_page_param == "prediction_results":
+    ket_qua_phan_tich_du_doan.show(st.session_state.theme)
+else:
+    # Existing Dashboard Logic
+    if 'selected_course_id' in st.session_state and st.session_state.selected_course_id is not None:
+        course_dashboard.show()
+    elif st.session_state.main_selected_tab == "📊 Tổng quan":
+        tong_quan.show(df, st.session_state.theme)
+    elif st.session_state.main_selected_tab == "📈 Chất lượng dữ liệu":
+        chat_luong_du_lieu.show(load_clean_data(), st.session_state.theme)
+    elif st.session_state.main_selected_tab == "📚 Khóa học":
+        khoa_hoc.show(df_courses, st.session_state.theme)

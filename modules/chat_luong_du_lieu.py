@@ -29,7 +29,7 @@ def show(df, theme='Dark'):
         "Overview", 
         "Completeness", 
         "Consistency", 
-        "Timeliness & Uniq", 
+        "Timeliness & Uniqueness", 
         "Acc-DQ Model"
     ]
     
@@ -241,7 +241,7 @@ def show(df, theme='Dark'):
             st.metric("Điểm Consistency TB", f"{avg_score:.1%}")
 
     # --- TAB 4: TIMELINESS & UNIQUENESS ---
-    elif active_tab == "Timeliness & Uniq":
+    elif active_tab == "Timeliness & Uniqueness":
         st.header("Timeliness & Uniqueness")
         
         col1, col2 = st.columns(2)
