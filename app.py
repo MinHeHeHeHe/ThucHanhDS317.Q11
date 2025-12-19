@@ -26,6 +26,23 @@ st.set_page_config(
 )
 
 # -----------------------------
+# Global Styles & Fonts
+# -----------------------------
+st.markdown(
+    """
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+    <style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        vertical-align: middle;
+        display: inline-block;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# -----------------------------
 # Read query params early
 # -----------------------------
 query_params = st.query_params
