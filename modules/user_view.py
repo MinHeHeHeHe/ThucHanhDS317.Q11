@@ -148,7 +148,8 @@ def display_user_dashboard(USER_ID: str):
             go.Indicator(
                 mode="gauge+number",
                 value=time_progress_percent,
-                title={"text": "Tiến trình Thời gian (%)", "font": {"size": 14}},
+                title={"text": "<b>Tiến trình Thời gian (%)</b>", "font": {"size": 22}},
+                number={"font": {"size": 42}},
                 gauge={
                     "axis": {"range": [None, 100], "tickwidth": 1},
                     "bar": {"color": "darkblue"},
@@ -158,10 +159,10 @@ def display_user_dashboard(USER_ID: str):
             )
         )
         fig_time_gauge.update_layout(
-            height=200,
-            margin=dict(l=10, r=10, t=50, b=10),
+            height=250,
+            margin=dict(l=20, r=20, t=80, b=20),
             paper_bgcolor=bg_color,
-            font=dict(color=text_color, size=18),
+            font=dict(color=text_color, size=20),
         )
         st.plotly_chart(fig_time_gauge, use_container_width=True, theme=None)
 
@@ -188,7 +189,7 @@ def display_user_dashboard(USER_ID: str):
                 }
             )
 
-            color_map = {"Video": "#852D95", "Exercise": "#1C70CA"}
+            color_map = {"Video": "#3182ce", "Exercise": "#38a169"}
             fig = px.bar(
                 df_scores,
                 x="Hoạt động",
@@ -196,30 +197,36 @@ def display_user_dashboard(USER_ID: str):
                 text="Nhãn",
                 color="Hoạt động",
                 color_discrete_map=color_map,
-                height=380,
+                height=450,
             )
 
-            fig.update_traces(textposition="inside", textfont=dict(color="white", size=16), marker_line_width=0)
+            fig.update_traces(
+                textposition="outside", 
+                textfont=dict(size=18, weight='bold'), 
+                marker_line_width=0,
+                hovertemplate="<b>%{x}</b><br>Điểm: %{y:.1f}%<extra></extra>"
+            )
             fig.update_layout(
-                title=dict(text="Phân phối điểm số", x=0.5, font=dict(size=24, color=text_color)),
+                title=dict(text="<b>Phân phối điểm số</b>", x=0.5, font=dict(size=28, color=text_color)),
                 yaxis=dict(
-                    title="Điểm (%)",
-                    range=[0, 100],
-                    tickvals=[0, 20, 40, 60, 80, 100],
+                    title="<b>Phần trăm (%)</b>",
+                    range=[0, 115], # Extra room for labels
+                    tickvals=[0, 25, 50, 75, 100],
                     showgrid=True,
                     gridcolor=grid_color,
                     tickfont=dict(color=text_color, size=16),
-                    titlefont=dict(color=text_color, size=18),
+                    titlefont=dict(color=text_color, size=20),
                 ),
-                xaxis=dict(title="Hoạt động", tickfont=dict(color=text_color, size=16), titlefont=dict(color=text_color, size=18)),
+                xaxis=dict(
+                    title=None, 
+                    tickfont=dict(color=text_color, size=16)
+                ),
                 showlegend=False,
                 plot_bgcolor=bg_color,
                 paper_bgcolor=bg_color,
-                font=dict(color=text_color, size=18),
-                margin=dict(l=20, r=20, t=60, b=20),
+                font=dict(color=text_color, size=16),
+                margin=dict(l=60, r=20, t=100, b=60), # Added more padding
             )
-
-            fig.update_traces(hovertemplate="<b>%{x}</b><br>Điểm: %{y:.1f}%<extra></extra>")
             st.plotly_chart(fig, use_container_width=True, theme=None)
 
     with col_chart_right:
@@ -247,20 +254,48 @@ def display_user_dashboard(USER_ID: str):
             attempt_attempts = [float(user.get(col, 0) or 0) for col in attempt_cols]
 
             df_chart = pd.DataFrame({"Giai đoạn": time_labels, "Lượt xem video": video_views, "Lượt làm bài tập": attempt_attempts})
+            # Aggregate by Giai đoạn to handle duplicate months
+            df_chart = df_chart.groupby("Giai đoạn", sort=False).sum().reset_index()
 
             if not df_chart.empty:
-                fig_monthly = px.line(df_chart, x="Giai đoạn", y=["Lượt xem video", "Lượt làm bài tập"], markers=True, height=380)
+                fig_monthly = px.line(
+                    df_chart, 
+                    x="Giai đoạn", 
+                    y=["Lượt xem video", "Lượt làm bài tập"], 
+                    markers=True, 
+                    height=400,
+                    line_shape='spline' # Smooth curves
+                )
+                fig_monthly.update_traces(marker=dict(size=10, line=dict(width=2)))
                 fig_monthly.update_layout(
-                    title=dict(text="Lượt xem video và làm bài tập theo giai đoạn", font=dict(size=24)),
-                    xaxis_title="Giai đoạn",
-                    yaxis_title="Số lượt",
+                    title=dict(text="<b>Lượt xem video và làm bài tập theo giai đoạn</b>", x=0.5, font=dict(size=28)),
+                    xaxis_title=None,
+                    yaxis_title="<b>Số lượt</b>",
                     hovermode="x unified",
-                    legend=dict(x=0, y=1, font=dict(color=text_color, size=18), bgcolor=bg_color),
+                    legend=dict(
+                        title=None, # Remove "variable"
+                        orientation="h",
+                        yanchor="bottom",
+                        y=1.02,
+                        xanchor="right",
+                        x=1,
+                        font=dict(color=text_color, size=18), 
+                        bgcolor="rgba(0,0,0,0)"
+                    ),
                     plot_bgcolor=bg_color,
                     paper_bgcolor=bg_color,
                     font=dict(color=text_color, size=18),
-                    xaxis=dict(gridcolor=grid_color, tickfont=dict(color=text_color, size=16), titlefont=dict(color=text_color, size=18)),
-                    yaxis=dict(gridcolor=grid_color, tickfont=dict(color=text_color, size=16), titlefont=dict(color=text_color, size=18)),
+                    xaxis=dict(
+                        gridcolor=grid_color, 
+                        tickfont=dict(color=text_color, size=18),
+                        tickangle=0
+                    ),
+                    yaxis=dict(
+                        gridcolor=grid_color, 
+                        tickfont=dict(color=text_color, size=18), 
+                        titlefont=dict(color=text_color, size=20)
+                    ),
+                    margin=dict(l=50, r=20, t=80, b=40),
                 )
                 st.plotly_chart(fig_monthly, use_container_width=True, theme=None)
             else:
@@ -278,6 +313,8 @@ def display_user_dashboard(USER_ID: str):
             "Submit Active Days": [float(user.get(col, 0) or 0) for col in active_days_submit_cols],
         }
     )
+    # Aggregate by Giai đoạn to handle duplicate months
+    df_active = df_active.groupby("Giai đoạn", sort=False).sum().reset_index()
 
     df_melted_active = df_active.melt(
         id_vars="Giai đoạn",
@@ -286,16 +323,54 @@ def display_user_dashboard(USER_ID: str):
         value_name="Số ngày",
     )
 
-    fig_active = px.bar(df_melted_active, x="Giai đoạn", y="Số ngày", color="Hoạt động", barmode="group", height=350)
+    fig_active = px.bar(
+        df_melted_active,
+        x="Giai đoạn",
+        y="Số ngày",
+        color="Hoạt động",
+        barmode="group",
+        height=400,
+        text="Số ngày",
+        color_discrete_sequence=["#4299e1", "#ed8936"] # Blue and Orange
+    )
+    max_active = df_melted_active["Số ngày"].max() if not df_melted_active.empty else 0
+    y_range_active = [0, max_active * 1.3] if max_active > 0 else [0, 5]
+
+    fig_active.update_traces(
+        textposition="outside", 
+        textfont=dict(size=18, weight='bold'),
+        marker_line_width=0,
+        cliponaxis=False
+    )
     fig_active.update_layout(
-        title=dict(text="Số ngày Hoạt động theo Giai đoạn", font=dict(size=24)),
-        xaxis_tickangle=-45,
+        title=dict(text="<b>Số ngày Hoạt động theo Giai đoạn</b>", x=0.5, font=dict(size=28)),
+        xaxis_tickangle=0, # Prefer horizontal if labels are short
         plot_bgcolor=bg_color,
         paper_bgcolor=bg_color,
         font=dict(color=text_color, size=18),
-        xaxis=dict(gridcolor=grid_color, tickfont=dict(color=text_color, size=16)),
-        yaxis=dict(gridcolor=grid_color, tickfont=dict(color=text_color, size=16)),
-        legend=dict(font=dict(color=text_color, size=18), bgcolor=bg_color),
+        xaxis=dict(
+            title=None,
+            gridcolor=grid_color, 
+            tickfont=dict(color=text_color, size=18)
+        ),
+        yaxis=dict(
+            title="<b>Số ngày</b>",
+            gridcolor=grid_color, 
+            tickfont=dict(color=text_color, size=18),
+            titlefont=dict(color=text_color, size=20),
+            range=y_range_active
+        ),
+        legend=dict(
+            title=None,
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            font=dict(color=text_color, size=18), 
+            bgcolor="rgba(0,0,0,0)"
+        ),
+        margin=dict(l=50, r=20, t=110, b=40),
     )
     st.plotly_chart(fig_active, use_container_width=True, theme=None)
 

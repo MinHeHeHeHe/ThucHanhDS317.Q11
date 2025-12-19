@@ -15,23 +15,34 @@ def navigate_to_main_page():
 
     # clear URL
     st.query_params["page"] = "dashboard"
-    for k in ["course_id", "user_id"]:
+    for k in ["course_id", "user_id", "view"]:
         if k in st.query_params:
             del st.query_params[k]
+    
 
 
 def _sync_state_from_url():
-    # luôn đồng bộ course_id trước
+    # Sync course_id
     course_id_param = st.query_params.get("course_id", None)
     if course_id_param:
         st.session_state.selected_course_id = str(course_id_param)
 
-    # nếu có user_id -> vào user_detail
+    # Sync view (dashboard or user_list)
+    view_param = st.query_params.get("view", None)
+    
+    # Sync user_id -> user_detail view
     user_id_param = st.query_params.get("user_id", None)
     if user_id_param:
         st.session_state.current_user_id = str(user_id_param)
         st.session_state.current_view = "user_detail"
         st.session_state.course_detail_tabs = f"👤 User: {st.session_state.current_user_id}"
+    elif view_param:
+        if view_param == "user_list":
+            st.session_state.current_view = "user_list"
+            st.session_state.course_detail_tabs = "👥 User List"
+        else:
+            st.session_state.current_view = "dashboard"
+            st.session_state.course_detail_tabs = "📊 Course Dashboard"
 
 
 def show():
@@ -82,36 +93,41 @@ def show():
     if st.session_state.course_detail_tabs not in tab_titles:
         st.session_state.course_detail_tabs = "📊 Course Dashboard"
 
+    def on_tab_change():
+        new_tab = st.session_state.course_detail_tabs
+        if new_tab == "📊 Course Dashboard":
+            st.session_state.current_view = "dashboard"
+            st.session_state.current_user_id = None
+            st.query_params["view"] = "dashboard"
+            if "user_id" in st.query_params:
+                del st.query_params["user_id"]
+        elif new_tab == "👥 User List":
+            st.session_state.current_view = "user_list"
+            st.session_state.current_user_id = None
+            st.query_params["view"] = "user_list"
+            if "user_id" in st.query_params:
+                del st.query_params["user_id"]
+        elif new_tab.startswith("👤 User:"):
+            st.session_state.current_view = "user_detail"
+            if "view" in st.query_params:
+                del st.query_params["view"]
+            # user_id is already in session_state.current_user_id
+
+    # Calculate the correct index for the radio button to ensure highlighting persists
+    try:
+        current_tab_index = tab_titles.index(st.session_state.course_detail_tabs)
+    except (ValueError, KeyError):
+        current_tab_index = 0
+
     active_tab = st.radio(
         "Chọn tab",
         tab_titles,
+        index=current_tab_index,
         horizontal=True,
         label_visibility="collapsed",
         key="course_detail_tabs",
+        on_change=on_tab_change
     )
-
-    # map tab -> view + URL
-    if active_tab == "📊 Course Dashboard":
-        st.session_state.current_view = "dashboard"
-        st.session_state.current_user_id = None
-        if "user_id" in st.query_params:
-            del st.query_params["user_id"]
-        st.query_params["page"] = "dashboard"
-        st.query_params["course_id"] = COURSE_ID
-
-    elif active_tab == "👥 User List":
-        st.session_state.current_view = "user_list"
-        st.session_state.current_user_id = None
-        if "user_id" in st.query_params:
-            del st.query_params["user_id"]
-        st.query_params["page"] = "dashboard"
-        st.query_params["course_id"] = COURSE_ID
-
-    elif active_tab.startswith("👤 User:"):
-        st.session_state.current_view = "user_detail"
-        st.query_params["page"] = "dashboard"
-        st.query_params["course_id"] = COURSE_ID
-        st.query_params["user_id"] = st.session_state.current_user_id
 
     st.markdown("---")
 

@@ -171,22 +171,22 @@ def _gauge(title, value_0_1, bg, text):
         value=float(value_0_1) * 100,
         number={
             "suffix": "%",
-            "font": {"size": 40}  # Cap font size for the value
+            "font": {"size": 44, "weight": "bold"}
         },
         title={
-            "text": title,
-            "font": {"size": 18}   # Standardize title size
+            "text": f"<b>{title}</b>",
+            "font": {"size": 24}
         },
         gauge={
-            "axis": {"range": [0, 100]},
+            "axis": {"range": [0, 100], "tickfont": {"size": 14}},
             "bar": {"color": "#1C70CA"}
         },
     ))
     fig.update_layout(
         paper_bgcolor=bg,
-        font=dict(color=text),
-        margin=dict(l=30, r=30, t=50, b=20),
-        height=220,  # Slightly shorter for better fitting
+        font=dict(color=text, size=18),
+        margin=dict(l=30, r=30, t=80, b=30),
+        height=260,
     )
     return fig
 
@@ -194,13 +194,12 @@ def _gauge(title, value_0_1, bg, text):
 # =========================================================
 # MAIN
 # =========================================================
-def show(df=None, theme="Dark"):
+def show(df=None, theme="Light"):
     # df nhận để tương thích app.py, nhưng KHÔNG dùng.
     tok = _theme_tokens(theme)
     bg_color, text_color, grid_color = tok["bg"], tok["text"], tok["grid"]
 
     st.title("Chất lượng dữ liệu")
-    st.caption("Trang này chỉ hiển thị **kết quả đã tính sẵn** (không chạy lại tính toán).")
 
     tab_titles = ["Completeness", "Consistency", "Timeliness & Uniqueness", "Acc-DQ Model"]
     active_tab = st.radio(
@@ -378,7 +377,7 @@ def show(df=None, theme="Dark"):
                 y="Metric",
                 orientation="h",
                 text=sp_sorted["Value"].map(lambda x: f"{x:.4f}"),
-                title="Thành phần S_perf"
+                title="<b>Thành phần S_perf</b>"
             )
             fig.update_layout(xaxis=dict(range=[0, 1.05]))
             fig.update_traces(textposition="outside", cliponaxis=False)
@@ -396,10 +395,14 @@ def show(df=None, theme="Dark"):
                 y="Metric",
                 orientation="h",
                 text=ss_sorted["Value"].map(lambda x: f"{x:.4f}"),
-                title="Thành phần S_san+"
+                title="<b>Thành phần S_san+</b>"
             )
-            fig.update_layout(xaxis=dict(range=[0, 1.05]))
-            fig.update_traces(textposition="outside", cliponaxis=False)
+            fig.update_layout(
+                xaxis=dict(range=[0, 1.05], tickfont=dict(size=16)),
+                yaxis=dict(tickfont=dict(size=16)),
+                title=dict(font=dict(size=26))
+            )
+            fig.update_traces(textposition="outside", cliponaxis=False, textfont=dict(size=18, weight="bold"))
             st.plotly_chart(_apply_theme(fig, bg_color, text_color, grid_color),
                             use_container_width=True, theme=None)
 

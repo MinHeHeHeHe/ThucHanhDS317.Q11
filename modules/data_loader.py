@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 @st.cache_data(ttl=3600)
-def load_users(path: str = "test_P5_pred.csv") -> pd.DataFrame:
+def load_users(path: str = "data/test_P5_pred.csv") -> pd.DataFrame:
     """Load user activity data from CSV."""
     try:
         return pd.read_csv(path)
@@ -11,7 +11,7 @@ def load_users(path: str = "test_P5_pred.csv") -> pd.DataFrame:
         return pd.DataFrame()
 
 @st.cache_data(ttl=3600)
-def load_courses(path: str = 'course_info_final_P5.csv') -> pd.DataFrame:
+def load_courses(path: str = 'data/course_info_final_P5.csv') -> pd.DataFrame:
     """Load course metadata from CSV."""
     try:
         df_local = pd.read_csv(path)
@@ -31,7 +31,7 @@ def load_courses(path: str = 'course_info_final_P5.csv') -> pd.DataFrame:
         return pd.DataFrame()
 
 @st.cache_data(ttl=3600)
-def load_train_data(path: str = 'train_validate.csv') -> pd.DataFrame:
+def load_train_data(path: str = 'data/train_validate.csv') -> pd.DataFrame:
     """Load training/validation data."""
     try:
         return pd.read_csv(path)
@@ -40,10 +40,23 @@ def load_train_data(path: str = 'train_validate.csv') -> pd.DataFrame:
         return pd.DataFrame()
 
 @st.cache_data(ttl=3600)
-def load_clean_data(path: str = 'df_clean.csv') -> pd.DataFrame:
+def load_clean_data(path: str = 'data/df_clean.csv') -> pd.DataFrame:
     """Load cleaned data for quality analysis."""
     try:
         return pd.read_csv(path)
     except FileNotFoundError:
         st.error(f"Lỗi: Không tìm thấy file '{path}'.")
         return pd.DataFrame()
+
+@st.cache_data(ttl=3600)
+def load_test_predictions(phase: int) -> pd.DataFrame:
+    """Load prediction data for a specific phase (1-5)."""
+    path = f"data/test_P{phase}_pred.csv"
+    try:
+        return pd.read_csv(path)
+    except FileNotFoundError:
+        st.error(f"Lỗi: Không tìm thấy file '{path}'.")
+        return pd.DataFrame(columns=['user_id', 'course_id', 'label', 'predict'])
+    except Exception as e:
+        st.error(f"Lỗi khi load dữ liệu giai đoạn {phase}: {e}")
+        return pd.DataFrame(columns=['user_id', 'course_id', 'label', 'predict'])

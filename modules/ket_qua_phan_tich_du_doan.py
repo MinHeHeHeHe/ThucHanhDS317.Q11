@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 from modules.theme_system import get_theme_colors
 
 
-def show(theme="Dark"):
+def show(theme="Light"):
     colors = get_theme_colors(theme)
 
     # auto text color theo theme

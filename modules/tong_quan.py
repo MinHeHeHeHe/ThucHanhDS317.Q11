@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 from urllib.parse import quote  # ✅ thêm để encode course_id an toàn
 
 
-def show(df, theme='Dark'):
+def show(df, theme='Light'):
     """Display the overview page with theme support"""
 
     # Theme colors
@@ -220,7 +220,7 @@ def show(df, theme='Dark'):
 <td style="text-align: center;"><div class="rank-number">{idx+1}</div></td>
 <td>
     <a href="{href}" target="_self" style="text-decoration: none;">
-        <div class="course-code" style="cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,0.3);">{course_id}</div>
+        <div class="course-code" style="cursor: pointer;">{course_id}</div>
     </a>
 </td>
 <td><div class="enrollment-badge">{int(row['dropout_count']):,}</div></td>
@@ -236,121 +236,53 @@ def show(df, theme='Dark'):
     st.markdown('<div style="height: 30px;"></div>', unsafe_allow_html=True)
 
     # Second row
-    col1, col2 = st.columns(2)
+    st.markdown('<div style="height: 30px;"></div>', unsafe_allow_html=True)
+    
+    dropout = df['label'].sum()
+    continue_study = len(df) - dropout
 
-    with col1:
-        st.markdown('<p style="font-size: 25px; font-weight: bold; margin-bottom: 5px;">Chọn giai đoạn:</p>', unsafe_allow_html=True)
+    labels_pie = ['Không bỏ học', 'Bỏ học']
+    values_pie = [continue_study, dropout]
+    colors_pie = ['#48bb78', '#ed8936']
 
-        selected_phase = st.selectbox(
-            "Chọn giai đoạn",
-            options=[1, 2, 3, 4, 5],
-            index=0,
-            key="phase_selector",
-            label_visibility="collapsed"
-        )
+    fig_pie = go.Figure(data=[go.Pie(
+        labels=labels_pie,
+        values=values_pie,
+        hole=0.5,
+        marker=dict(colors=colors_pie),
+        textinfo='percent+label',
+        textfont=dict(color='#ffffff', size=22, family='Arial, sans-serif')
+    )])
 
-        dropout_count = df['label'].sum()
-        continue_count = len(df) - dropout_count
+    total_count = len(df)
 
-        phases, counts, colors, names = [], [], [], []
-        for p in range(1, selected_phase + 1):
-            phase_label = f'Giai đoạn {p}'
-            if p < selected_phase:
-                phases.append(phase_label)
-                counts.append(continue_count)
-                colors.append('#4299e1')
-                names.append('Nhãn')
-            else:
-                phases.append(phase_label)
-                counts.append(dropout_count)
-                colors.append('#ed8936')
-                names.append('Dự đoán')
+    fig_pie.update_layout(
+        plot_bgcolor=bg_color,
+        paper_bgcolor=bg_color,
+        font=dict(color=text_color, size=18),
+        title=dict(
+            text='<b>Phân phối học viên bỏ học và không bỏ học</b>',
+            font=dict(size=28, color=text_color, family='Arial, sans-serif'),
+            x=0.5,
+            xanchor='center'
+        ),
+        height=600,
+        margin=dict(l=20, r=20, t=70, b=20),
+        showlegend=True,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.2,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=22, color=text_color)
+        ),
+        annotations=[dict(
+            text=f'<b>Tổng cộng</b><br>{total_count:,}',
+            x=0.5, y=0.5,
+            font=dict(size=26, color=text_color),
+            showarrow=False
+        )]
+    )
 
-        fig_bar = go.Figure()
-        for i in range(len(phases)):
-            show_legend = (i == 0) or (i == len(phases) - 1 and selected_phase > 1)
-            fig_bar.add_trace(go.Bar(
-                x=[phases[i]],
-                y=[counts[i]],
-                name=names[i],
-                marker_color=colors[i],
-                showlegend=show_legend,
-                legendgroup=names[i]
-            ))
-
-        fig_bar.update_layout(
-            plot_bgcolor=bg_color,
-            paper_bgcolor=bg_color,
-            font=dict(color=text_color),
-            title=dict(
-                text='Dự đoán số lượng học viên bỏ học trong giai đoạn',
-                font=dict(size=24, color=text_color, family='Arial, sans-serif'),
-                x=0.02,
-                xanchor='left'
-            ),
-            xaxis=dict(showgrid=False, title='', tickfont=dict(size=14, color=text_color)),
-            yaxis=dict(
-                showgrid=True,
-                gridcolor=grid_color,
-                title='Số lượng học viên',
-                titlefont=dict(size=18, color=text_color),
-                tickfont=dict(size=14, color=text_color)
-            ),
-            height=500,
-            margin=dict(l=20, r=20, t=50, b=20),
-            barmode='group',
-            bargap=0.3,
-            legend=dict(font=dict(color=text_color, size=16))
-        )
-
-        st.plotly_chart(fig_bar, use_container_width=True)
-
-    with col2:
-        dropout = df['label'].sum()
-        continue_study = len(df) - dropout
-
-        labels_pie = ['Không bỏ học', 'Bỏ học']
-        values_pie = [continue_study, dropout]
-        colors_pie = ['#48bb78', '#ed8936']
-
-        fig_pie = go.Figure(data=[go.Pie(
-            labels=labels_pie,
-            values=values_pie,
-            hole=0.5,
-            marker=dict(colors=colors_pie),
-            textinfo='percent',
-            textfont=dict(color='#ffffff', size=20)
-        )])
-
-        total_count = len(df)
-
-        fig_pie.update_layout(
-            plot_bgcolor=bg_color,
-            paper_bgcolor=bg_color,
-            font=dict(color=text_color, size=14),
-            title=dict(
-                text='Phân phối học viên bỏ học và không bỏ học',
-                font=dict(size=18, color=text_color, family='Arial, sans-serif'),
-                x=0.5,
-                xanchor='center'
-            ),
-            height=600,
-            margin=dict(l=20, r=20, t=70, b=20),
-            showlegend=True,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=-0.2,
-                xanchor="center",
-                x=0.5,
-                font=dict(size=20, color=text_color)
-            ),
-            annotations=[dict(
-                text=f'Tổng cộng<br>{total_count:,}',
-                x=0.5, y=0.5,
-                font=dict(size=24, color=text_color),
-                showarrow=False
-            )]
-        )
-
-        st.plotly_chart(fig_pie, use_container_width=True)
+    st.plotly_chart(fig_pie, use_container_width=True)

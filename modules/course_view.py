@@ -117,12 +117,12 @@ def display_course_dashboard(course, COURSE_ID):
 
         if not df_scores.empty:
             fig = px.pie(df_scores, values="Tỷ lệ", names="Phần", title="Tỷ lệ đóng góp của từng phần (Assignment, Exam, etc.)", hole=0.3)
-            fig.update_traces(textposition="inside", textinfo="percent+label")
+            fig.update_traces(textposition="inside", textinfo="percent+label", textfont=dict(size=20, weight="bold"))
             fig.update_layout(
-                title=dict(text="Tỷ lệ đóng góp của từng phần (Assignment, Exam, etc.)", font=dict(size=24, color=text_color)),
+                title=dict(text="<b>Tỷ lệ đóng góp của từng phần (Assignment, Exam, etc.)</b>", font=dict(size=28, color=text_color)),
                 paper_bgcolor=bg_color,
                 font=dict(color=text_color, size=18),
-                legend=dict(font=dict(color=text_color, size=18)),
+                legend=dict(font=dict(color=text_color, size=20)),
             )
             st.plotly_chart(fig, use_container_width=True, theme=None)
         else:
@@ -141,12 +141,12 @@ def display_course_dashboard(course, COURSE_ID):
                 dropout_counts["Trạng thái"] = dropout_counts["Trạng thái"].map({0: "Không bỏ học", 1: "Bỏ học"})
 
                 fig_dropout = px.pie(dropout_counts, values="Số lượng", names="Trạng thái", title="Tỷ lệ bỏ học (Dropout Rate)", hole=0.3)
-                fig_dropout.update_traces(textposition="inside", textinfo="percent+label")
+                fig_dropout.update_traces(textposition="inside", textinfo="percent+label", textfont=dict(size=20, weight="bold"))
                 fig_dropout.update_layout(
-                    title=dict(text="Tỷ lệ bỏ học (Dropout Rate)", font=dict(size=24, color=text_color)),
+                    title=dict(text="<b>Tỷ lệ bỏ học (Dropout Rate)</b>", font=dict(size=28, color=text_color)),
                     paper_bgcolor=bg_color,
                     font=dict(color=text_color, size=18),
-                    legend=dict(font=dict(color=text_color, size=18)),
+                    legend=dict(font=dict(color=text_color, size=20)),
                 )
                 st.plotly_chart(fig_dropout, use_container_width=True, theme=None)
             else:

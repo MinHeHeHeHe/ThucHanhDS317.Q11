@@ -3,7 +3,7 @@ Dynamic theme system for MOOCCubeX Dashboard
 Provides comprehensive color schemes for light and dark themes
 """
 
-def get_theme_colors(theme='Dark'):
+def get_theme_colors(theme='Light'):
     """Return color scheme based on theme"""
     if theme == 'Dark':
         return {
@@ -62,7 +62,7 @@ def get_theme_colors(theme='Dark'):
             'border_hover': 'rgba(49, 130, 206, 0.3)',
         }
 
-def get_dynamic_css(theme='Dark'):
+def get_dynamic_css(theme='Light'):
     """Generate dynamic CSS based on theme"""
     colors = get_theme_colors(theme)
     

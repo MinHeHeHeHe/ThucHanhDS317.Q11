@@ -35,7 +35,7 @@ def navigate_to_dashboard(course_id: str) -> None:
     st.query_params["theme"] = st.session_state.get("theme", "Light")
 
 
-def show(df: Optional[pd.DataFrame] = None, theme: str = "Dark") -> None:
+def show(df: Optional[pd.DataFrame] = None, theme: str = "Light") -> None:
     colors = get_theme_colors(theme)
 
     # ===== Theme tokens for button + tooltip + card =====

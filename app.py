@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from datetime import datetime
 
 # Import page modules
-from modules import tong_quan, chat_luong_du_lieu, khoa_hoc, gioi_thieu, ket_qua_phan_tich_du_doan
+from modules import tong_quan, tong_quan_hien_tai, chat_luong_du_lieu, khoa_hoc, gioi_thieu, ket_qua_phan_tich_du_doan
 from modules.styles import get_main_css, get_header_css
 from modules.theme_system import get_dynamic_css, get_theme_colors
 
@@ -64,6 +64,7 @@ st.session_state.setdefault("current_view", "dashboard")
 # -----------------------------
 course_id_param = query_params.get("course_id", None)
 user_id_param = query_params.get("user_id", None)
+view_param = query_params.get("view", None)
 
 if course_id_param and current_page_param not in ["intro", "prediction_results"]:
     # Sync selected_course_id from URL
@@ -73,15 +74,26 @@ if course_id_param and current_page_param not in ["intro", "prediction_results"]
         st.session_state.current_user_id = None
         st.session_state.current_view = "dashboard"
         st.session_state.course_detail_tabs = "📊 Course Dashboard"
+        st.session_state._dashboard_url_synced = False
 
-    # Nếu có user_id trong URL -> đồng bộ vào state (Deep-link)
+    # Sync view from URL if provided (always assert state)
+    if view_param and not user_id_param:
+        if view_param == "user_list":
+            st.session_state.current_view = "user_list"
+            st.session_state.current_user_id = None
+            st.session_state.course_detail_tabs = "👥 User List"
+        elif view_param == "dashboard":
+            st.session_state.current_view = "dashboard"
+            st.session_state.current_user_id = None
+            st.session_state.course_detail_tabs = "📊 Course Dashboard"
+
+    # Deep-link: If user_id in URL -> sync to state (always assert state)
     if user_id_param:
-        if st.session_state.current_user_id != user_id_param:
-            st.session_state.current_user_id = str(user_id_param)
-            st.session_state.current_view = "user_detail"
-            st.session_state.course_detail_tabs = f"👤 User: {st.session_state.current_user_id}"
-    else:
-        # Nếu URL không có user_id nhưng state đang ở user_detail -> sync ngược lại (thoát user detail)
+        st.session_state.current_user_id = str(user_id_param)
+        st.session_state.current_view = "user_detail"
+        st.session_state.course_detail_tabs = f"👤 User: {st.session_state.current_user_id}"
+    elif not view_param:
+        # If URL has no user_id AND no view_param but state is user_detail -> sync back (exit detail)
         if st.session_state.current_view == "user_detail":
             st.session_state.current_user_id = None
             st.session_state.current_view = "dashboard"
@@ -152,6 +164,13 @@ with st.sidebar:
         # Khi đổi tab sidebar -> quay lại dashboard
         st.query_params["page"] = "dashboard"
 
+        # Luôn reset Giai đoạn về 1 khi đổi tab chính
+        if "phase" in st.query_params:
+            try:
+                del st.query_params["phase"]
+            except Exception: pass
+        st.session_state.phase_selector = 1
+
         # ✅ Nếu đang ở course dashboard -> thoát ra
         if st.session_state.get("selected_course_id") is not None:
             st.session_state.selected_course_id = None
@@ -169,18 +188,17 @@ with st.sidebar:
 
     selected_tab = st.radio(
         "Navigation",
-        ["📊 Tổng quan", "📈 Chất lượng dữ liệu", "📚 Khóa học"],
+        ["📊 Tổng quan", "📊 Tổng quan hiện tại", "📈 Chất lượng dữ liệu", "📚 Khóa học"],
         label_visibility="collapsed",
         key="main_selected_tab",
         on_change=on_sidebar_change
     )
 
 
-# -----------------------------
-# Initialize theme in session state
-# -----------------------------
 if "theme" not in st.session_state:
-    st.session_state.theme = st.query_params.get("theme", "Light")
+    # Always default to Light on first load/reload
+    st.session_state.theme = "Light"
+    st.query_params["theme"] = "Light"
 else:
     if "theme" not in st.query_params or st.query_params["theme"] != st.session_state.theme:
         st.query_params["theme"] = st.session_state.theme
@@ -422,6 +440,9 @@ else:
 
     elif current_tab == "📊 Tổng quan":
         tong_quan.show(df, st.session_state.theme)
+
+    elif current_tab == "📊 Tổng quan hiện tại":
+        tong_quan_hien_tai.show(df, st.session_state.theme)
 
     elif current_tab == "📈 Chất lượng dữ liệu":
         chat_luong_du_lieu.show(load_clean_data(), st.session_state.theme)

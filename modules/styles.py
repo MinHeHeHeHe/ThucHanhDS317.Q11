@@ -4,7 +4,7 @@ CSS styles for the MOOCCubeX Dashboard
 
 from modules.theme_system import get_theme_colors
 
-def get_main_css(theme='Dark'):
+def get_main_css(theme='Light'):
     """Return main CSS for the dashboard"""
     colors = get_theme_colors(theme)
     

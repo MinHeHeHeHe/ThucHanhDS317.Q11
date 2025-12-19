@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from modules.theme_system import get_theme_colors
 
-def show(theme='Dark'):
+def show(theme='Light'):
     colors = get_theme_colors(theme)
     
     # Custom CSS for this page
