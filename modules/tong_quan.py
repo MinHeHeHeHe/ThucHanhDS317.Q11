@@ -1,10 +1,12 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+from urllib.parse import quote  # ✅ thêm để encode course_id an toàn
+
 
 def show(df, theme='Dark'):
     """Display the overview page with theme support"""
-    
+
     # Theme colors
     if theme == "Dark":
         bg_color = '#1a202c'
@@ -21,7 +23,6 @@ def show(df, theme='Dark'):
     total_students = df['user_id'].nunique()
     total_courses = df['course_id'].nunique()
     total_enrollments = len(df)
-    # Calculate dropout rate (mean of label column)
     dropout_rate = df['label'].mean() * 100 if 'label' in df.columns else 0
 
     with col1:
@@ -63,17 +64,14 @@ def show(df, theme='Dark'):
 
     with col1:
         # Trend chart
-        
-        # Group by month and year
         df_trend = df.groupby(['start_year', 'start_month']).size().reset_index(name='count')
         df_trend = df_trend.sort_values(['start_year', 'start_month'])
-        
-        # Create date labels manually
+
         df_trend['date_label'] = df_trend.apply(
-            lambda x: f"{int(x['start_year'])}-{int(x['start_month']):02d}", 
+            lambda x: f"{int(x['start_year'])}-{int(x['start_month']):02d}",
             axis=1
         )
-        
+
         fig_trend = go.Figure()
         fig_trend.add_trace(go.Scatter(
             x=df_trend['date_label'],
@@ -83,7 +81,7 @@ def show(df, theme='Dark'):
             line=dict(color='#ed8936', width=2),
             marker=dict(size=6)
         ))
-        
+
         fig_trend.update_layout(
             plot_bgcolor=bg_color,
             paper_bgcolor=bg_color,
@@ -109,21 +107,18 @@ def show(df, theme='Dark'):
             height=600,
             margin=dict(l=10, r=10, t=50, b=10)
         )
-        
+
         st.plotly_chart(fig_trend, use_container_width=True)
 
     with col2:
-        # Top 5 table with enhanced HTML/CSS design
-        
-        # Create top courses by dropout count (label=1)
+        # Top 5 table
         if 'label' in df.columns:
             dropout_df = df[df['label'] == 1]
             top_courses = dropout_df.groupby('course_id').size().reset_index(name='dropout_count')
             top_courses = top_courses.nlargest(5, 'dropout_count')
         else:
             top_courses = pd.DataFrame(columns=['course_id', 'dropout_count'])
-        
-        # Enhanced table HTML with modern styling
+
         table_html = f"""<style>
 .ranking-container {{
     background: linear-gradient(135deg, #1e2530 0%, #2d3748 100%);
@@ -202,7 +197,7 @@ def show(df, theme='Dark'):
 }}
 </style>
 <div class="ranking-container">
-    <div class="ranking-title">Bảng xếp hạng khóa học bỏ học cao nhất</div> 
+    <div class="ranking-title">Bảng xếp hạng khóa học bỏ học cao nhất</div>
     <table class="ranking-table">
         <thead>
             <tr>
@@ -213,19 +208,29 @@ def show(df, theme='Dark'):
         </thead>
         <tbody>
 """
-        
-        # Add rows dynamically
-        for idx, (i, row) in enumerate(top_courses.iterrows()):
+
+        for idx, (_, row) in enumerate(top_courses.iterrows()):
+            course_id = str(row['course_id'])
+            course_id_q = quote(course_id)  # ✅ encode an toàn
+
+            # ✅ link KHÔNG có user_id => click course sẽ reset user_detail
+            href = f"?page=dashboard&course_id={course_id_q}&theme={theme}"
+
             table_html += f"""<tr>
 <td style="text-align: center;"><div class="rank-number">{idx+1}</div></td>
-<td><div class="course-code">{row['course_id']}</div></td>
-<td><div class="enrollment-badge">{row['dropout_count']:,}</div></td>
+<td>
+    <a href="{href}" target="_self" style="text-decoration: none;">
+        <div class="course-code" style="cursor: pointer; border-bottom: 1px dashed rgba(255,255,255,0.3);">{course_id}</div>
+    </a>
+</td>
+<td><div class="enrollment-badge">{int(row['dropout_count']):,}</div></td>
 </tr>"""
+
         table_html += """
         </tbody>
     </table>
 </div>"""
-        
+
         st.markdown(table_html, unsafe_allow_html=True)
 
     st.markdown('<div style="height: 30px;"></div>', unsafe_allow_html=True)
@@ -234,49 +239,34 @@ def show(df, theme='Dark'):
     col1, col2 = st.columns(2)
 
     with col1:
-        # Phase selection and bar chart
-        
-        # Phase selector
         st.markdown('<p style="font-size: 25px; font-weight: bold; margin-bottom: 5px;">Chọn giai đoạn:</p>', unsafe_allow_html=True)
-        
+
         selected_phase = st.selectbox(
-            "Chọn giai đoạn", 
+            "Chọn giai đoạn",
             options=[1, 2, 3, 4, 5],
             index=0,
             key="phase_selector",
             label_visibility="collapsed"
         )
-        
-        # Calculate actual counts from data
-        # label=1 means dropout (bỏ học), label=0 means continue (không bỏ học)
-        dropout_count = df['label'].sum()  # Count of students who dropped out
-        continue_count = len(df) - dropout_count  # Count of students who continued
-        
-        # Prepare data for phases 1 to selected_phase
-        phases = []
-        counts = []
-        colors = []
-        names = []
-        
+
+        dropout_count = df['label'].sum()
+        continue_count = len(df) - dropout_count
+
+        phases, counts, colors, names = [], [], [], []
         for p in range(1, selected_phase + 1):
             phase_label = f'Giai đoạn {p}'
-            
             if p < selected_phase:
-                # For previous phases, show Label (students who continued)
                 phases.append(phase_label)
                 counts.append(continue_count)
                 colors.append('#4299e1')
                 names.append('Nhãn')
             else:
-                # For current phase, show Predict (students who dropped out)
                 phases.append(phase_label)
                 counts.append(dropout_count)
                 colors.append('#ed8936')
                 names.append('Dự đoán')
-        
-        # Create bar chart
+
         fig_bar = go.Figure()
-        
         for i in range(len(phases)):
             show_legend = (i == 0) or (i == len(phases) - 1 and selected_phase > 1)
             fig_bar.add_trace(go.Bar(
@@ -287,7 +277,7 @@ def show(df, theme='Dark'):
                 showlegend=show_legend,
                 legendgroup=names[i]
             ))
-        
+
         fig_bar.update_layout(
             plot_bgcolor=bg_color,
             paper_bgcolor=bg_color,
@@ -298,11 +288,7 @@ def show(df, theme='Dark'):
                 x=0.02,
                 xanchor='left'
             ),
-            xaxis=dict(
-                showgrid=False,
-                title='',
-                tickfont=dict(size=14, color=text_color)
-            ),
+            xaxis=dict(showgrid=False, title='', tickfont=dict(size=14, color=text_color)),
             yaxis=dict(
                 showgrid=True,
                 gridcolor=grid_color,
@@ -314,25 +300,19 @@ def show(df, theme='Dark'):
             margin=dict(l=20, r=20, t=50, b=20),
             barmode='group',
             bargap=0.3,
-            legend=dict(
-                font=dict(color=text_color, size=16)
-            )
+            legend=dict(font=dict(color=text_color, size=16))
         )
-        
+
         st.plotly_chart(fig_bar, use_container_width=True)
 
     with col2:
-        # Pie chart
-        
-        # Calculate distribution based on label
-        # label=1 means dropout (bỏ học), label=0 means continue (không bỏ học)
-        dropout = df['label'].sum()  # Students who dropped out
-        continue_study = len(df) - dropout  # Students who continued
-        
+        dropout = df['label'].sum()
+        continue_study = len(df) - dropout
+
         labels_pie = ['Không bỏ học', 'Bỏ học']
         values_pie = [continue_study, dropout]
         colors_pie = ['#48bb78', '#ed8936']
-        
+
         fig_pie = go.Figure(data=[go.Pie(
             labels=labels_pie,
             values=values_pie,
@@ -341,10 +321,9 @@ def show(df, theme='Dark'):
             textinfo='percent',
             textfont=dict(color='#ffffff', size=20)
         )])
-        
-        # Add center annotation
+
         total_count = len(df)
-        
+
         fig_pie.update_layout(
             plot_bgcolor=bg_color,
             paper_bgcolor=bg_color,
@@ -356,7 +335,7 @@ def show(df, theme='Dark'):
                 xanchor='center'
             ),
             height=600,
-            margin=dict(l=20, r=20, t=70,b=20),
+            margin=dict(l=20, r=20, t=70, b=20),
             showlegend=True,
             legend=dict(
                 orientation="h",
@@ -373,5 +352,5 @@ def show(df, theme='Dark'):
                 showarrow=False
             )]
         )
-        
+
         st.plotly_chart(fig_pie, use_container_width=True)

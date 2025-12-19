@@ -1,16 +1,38 @@
 import streamlit as st
 import pandas as pd
 from typing import Optional
+from datetime import datetime
 
 from modules.data_loader import load_courses
 from modules.theme_system import get_theme_colors
 
 
+
+def format_date_ddmmyyyy(date_str: str) -> str:
+    """
+    Chuyển MM/DD/YYYY → DD/MM/YYYY
+    """
+    if not date_str or pd.isna(date_str):
+        return ""
+    try:
+        return datetime.strptime(date_str, "%m/%d/%Y").strftime("%d/%m/%Y")
+    except ValueError:
+        # fallback nếu dữ liệu không đúng format
+        return date_str
+
 def navigate_to_dashboard(course_id: str) -> None:
-    """Sets session state to navigate to the specific course dashboard."""
+    """Sets session state and URL to navigate to the specific course dashboard."""
     st.session_state.selected_course_id = course_id
     st.session_state.current_view = "dashboard"
     st.session_state.current_user_id = None
+    st.session_state.course_detail_tabs = "📊 Course Dashboard"
+
+    # ✅ Đồng bộ URL
+    st.query_params["page"] = "dashboard"
+    st.query_params["course_id"] = course_id
+    if "user_id" in st.query_params:
+        del st.query_params["user_id"]
+    st.query_params["theme"] = st.session_state.get("theme", "Light")
 
 
 def show(df: Optional[pd.DataFrame] = None, theme: str = "Dark") -> None:
@@ -324,8 +346,11 @@ def show(df: Optional[pd.DataFrame] = None, theme: str = "Dark") -> None:
                     col_date, col_users = st.columns([2, 1])
 
                     with col_date:
-                        start = course.get("class_start", "")
-                        end = course.get("class_end", "")
+                        start_raw = course.get("class_start", "")
+                        end_raw = course.get("class_end", "")
+
+                        start = format_date_ddmmyyyy(start_raw)
+                        end = format_date_ddmmyyyy(end_raw)
                         st.markdown(f"🗓️ **Thời gian:** {start} – {end}")
 
                     with col_users:

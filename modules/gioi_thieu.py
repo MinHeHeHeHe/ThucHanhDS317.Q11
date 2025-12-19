@@ -178,7 +178,7 @@ def show(theme='Dark'):
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<br><hr><br>", unsafe_allow_html=True)
+    st.markdown("<br><br>", unsafe_allow_html=True)
     
     # PROJECT INFO TABS
     st.subheader("Thông tin về dự án")
