@@ -128,28 +128,96 @@ def display_course_dashboard(course, COURSE_ID):
         else:
             st.info("Không có dữ liệu phân phối điểm cho khóa học này.")
 
+    # Load user data once for all charts
+    try:
+        df_users = load_users()
+        course_users = df_users[df_users["course_id"] == COURSE_ID]
+    except Exception as e:
+        st.error(f"Lỗi khi load dữ liệu người dùng: {e}")
+        course_users = pd.DataFrame()
+
     with col_right:
         st.header("Dự đoán tỉ lệ bỏ học trong toàn khóa")
 
-        try:
-            df_users = load_users()
-            course_users = df_users[df_users["course_id"] == COURSE_ID]
+        if not course_users.empty and "predict" in course_users.columns:
+            dropout_counts = course_users["predict"].value_counts().reset_index()
+            dropout_counts.columns = ["Trạng thái", "Số lượng"]
+            dropout_counts["Trạng thái"] = dropout_counts["Trạng thái"].map({0: "Không bỏ học", 1: "Bỏ học"})
 
-            if not course_users.empty and "predict" in course_users.columns:
-                dropout_counts = course_users["predict"].value_counts().reset_index()
-                dropout_counts.columns = ["Trạng thái", "Số lượng"]
-                dropout_counts["Trạng thái"] = dropout_counts["Trạng thái"].map({0: "Không bỏ học", 1: "Bỏ học"})
+            fig_dropout = px.pie(dropout_counts, values="Số lượng", names="Trạng thái", title="Tỷ lệ bỏ học (Dropout Rate)", hole=0.3)
+            fig_dropout.update_traces(textposition="inside", textinfo="percent+label", textfont=dict(size=20, weight="bold"))
+            fig_dropout.update_layout(
+                title=dict(text="<b>Tỷ lệ bỏ học (Dropout Rate)</b>", font=dict(size=28, color=text_color)),
+                paper_bgcolor=bg_color,
+                font=dict(color=text_color, size=18),
+                legend=dict(font=dict(color=text_color, size=20)),
+            )
+            st.plotly_chart(fig_dropout, use_container_width=True, theme=None)
+        else:
+            st.info("Không có dữ liệu về trạng thái bỏ học (column 'predict').")
 
-                fig_dropout = px.pie(dropout_counts, values="Số lượng", names="Trạng thái", title="Tỷ lệ bỏ học (Dropout Rate)", hole=0.3)
-                fig_dropout.update_traces(textposition="inside", textinfo="percent+label", textfont=dict(size=20, weight="bold"))
-                fig_dropout.update_layout(
-                    title=dict(text="<b>Tỷ lệ bỏ học (Dropout Rate)</b>", font=dict(size=28, color=text_color)),
-                    paper_bgcolor=bg_color,
-                    font=dict(color=text_color, size=18),
-                    legend=dict(font=dict(color=text_color, size=20)),
-                )
-                st.plotly_chart(fig_dropout, use_container_width=True, theme=None)
-            else:
-                st.info("Không có dữ liệu về trạng thái bỏ học (column 'predict').")
-        except Exception as e:
-            st.error(f"Lỗi khi vẽ biểu đồ bỏ học: {e}")
+    # =======================
+    # 3. HÀNH VI HỌC TẬP (CUMULATIVE)
+    # =======================
+    st.markdown("---")
+    st.header("Hành vi học tập tích lũy theo thời gian")
+
+    video_cols = [f"num_events_P{i}" for i in range(1, 6)]
+    attempt_cols = [f"n_attempts_P{i}" for i in range(1, 6)]
+
+    if not course_users.empty:
+        video_cum = course_users[video_cols].sum()
+        attempt_cum = course_users[attempt_cols].sum()
+
+        start_date = pd.to_datetime(course.get("class_start", None))
+        end_date = pd.to_datetime(course.get("class_end", None))
+
+        if not pd.isna(start_date) and not pd.isna(end_date):
+            duration = (end_date - start_date).days
+            percents = [0.2, 0.4, 0.6, 0.8, 0.9]
+            time_labels = [(start_date + pd.Timedelta(days=int(duration * p))).strftime("%b %Y") for p in percents]
+        else:
+            time_labels = ["P1 (20%)", "P2 (40%)", "P3 (60%)", "P4 (80%)", "P5 (90%)"]
+
+        df_cum = pd.DataFrame(
+            {"Thời gian": time_labels, "Video (tích lũy)": video_cum.values, "Exercise (tích lũy)": attempt_cum.values}
+        )
+
+        fig_cum = px.line(df_cum, x="Thời gian", y=["Video (tích lũy)", "Exercise (tích lũy)"], markers=True, height=420)
+        fig_cum.update_layout(
+            title=dict(text="<b>Hành vi học tập tích lũy theo thời gian</b>", font=dict(size=24, color=text_color)),
+            paper_bgcolor=bg_color,
+            plot_bgcolor=bg_color,
+            font=dict(color=text_color, size=16),
+            yaxis_title="Tổng lượt",
+            hovermode="x unified",
+            legend=dict(font=dict(color=text_color)),
+        )
+        fig_cum.update_xaxes(gridcolor=grid_color)
+        fig_cum.update_yaxes(gridcolor=grid_color)
+        st.plotly_chart(fig_cum, use_container_width=True, theme=None)
+
+        # =======================
+        # 4. HÀNH VI THEO TỪNG GIAI ĐOẠN (INCREMENTAL)
+        # =======================
+        st.header("Mức độ tham gia theo từng giai đoạn")
+
+        video_inc = video_cum.diff().fillna(video_cum.iloc[0])
+        attempt_inc = attempt_cum.diff().fillna(attempt_cum.iloc[0])
+
+        df_inc = pd.DataFrame({"Giai đoạn": ["0–20%", "20–40%", "40–60%", "60–80%", "80–90%"], "Video": video_inc.values, "Exercise": attempt_inc.values})
+
+        fig_inc = px.bar(df_inc, x="Giai đoạn", y=["Video", "Exercise"], barmode="group", height=380)
+        fig_inc.update_layout(
+            title=dict(text="<b>Mức độ tham gia theo từng giai đoạn</b>", font=dict(size=24, color=text_color)),
+            paper_bgcolor=bg_color,
+            plot_bgcolor=bg_color,
+            font=dict(color=text_color, size=16),
+            yaxis_title="Số lượt",
+            legend=dict(font=dict(color=text_color)),
+        )
+        fig_inc.update_xaxes(gridcolor=grid_color)
+        fig_inc.update_yaxes(gridcolor=grid_color)
+        st.plotly_chart(fig_inc, use_container_width=True, theme=None)
+    else:
+        st.info("Không có dữ liệu hành vi học tập cho khóa học này.")
