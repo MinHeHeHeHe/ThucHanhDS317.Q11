@@ -32,7 +32,10 @@ def display_course_dashboard(course, COURSE_ID):
         .metric-card {{ color: {text_color} !important; }}
         .metric-label {{ color: {text_color} !important; font-size: 18px !important; }}
         .metric-value {{ color: {text_color} !important; font-size: 32px !important; }}
-        h1, h2, h3, p, div, span {{ font-size: 16px; }}
+        h1 {{ font-size: 36px !important; }}
+        h2 {{ font-size: 28px !important; }}
+        h3 {{ font-size: 22px !important; }}
+        p, div, span {{ font-size: 16px; }}
     </style>
     """,
         unsafe_allow_html=True,

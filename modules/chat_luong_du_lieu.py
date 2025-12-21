@@ -201,6 +201,32 @@ def show(df=None, theme="Light"):
 
     st.title("Chất lượng dữ liệu")
 
+    # Increase font sizes for better readability
+    st.markdown(f"""
+    <style>
+        /* Main text and paragraphs */
+        div[data-testid="stMarkdownContainer"] p {{
+            font-size: 22px !important;
+            line-height: 1.6 !important;
+        }}
+        /* Subheaders */
+        div[data-testid="stMarkdownContainer"] h3 {{
+            font-size: 30px !important;
+            font-weight: 700 !important;
+            margin-top: 25px !important;
+        }}
+        /* Bullet points and list items */
+        div[data-testid="stMarkdownContainer"] li {{
+            font-size: 20px !important;
+            margin-bottom: 8px !important;
+        }}
+        /* Text rendered via st.write */
+        .stText p, .stWrite p {{
+            font-size: 20px !important;
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+
     tab_titles = ["Completeness", "Consistency", "Timeliness & Uniqueness", "Acc-DQ Model"]
     active_tab = st.radio(
         "",

@@ -187,21 +187,51 @@ def show(theme='Light'):
     
     with tab1:
         st.markdown("""
+        ### Tên dự án
+        **Dự đoán khả năng bỏ học của học viên trong các khóa học MOOC.**
+
         ### Mục tiêu
-        Dự đoán sớm khả năng bỏ học của học viên trong các khóa học MOOC.
+        Xây dựng mô hình học máy nhằm dự đoán sớm nguy cơ bỏ học của học viên trong các khóa học MOOC dựa trên dữ liệu hành vi học tập và thông tin ngữ cảnh.
 
-        ### Khả năng
-        Dự đoán sớm khả năng bỏ học của học viên trong các khóa học MOOC.
+        ### Mô tả ngắn
+        Dự án khai thác bộ dữ liệu MOOCCubeX, kết hợp các đặc trưng hành vi theo thời gian, tương tác học tập và thông tin khóa học để phân loại học viên thành hai nhóm: tiếp tục học và bỏ học. Kết quả giúp nền tảng MOOC phát hiện sớm học viên có nguy cơ cao và hỗ trợ can thiệp kịp thời.
 
-        ### Ý nghĩa
-        Đề tài "Dự đoán khả năng bỏ học của học viên trong các khóa học MOOC" hướng đến sự nghiên cứu sâu sắc về khả năng dự đoán và phân loại kết quả học tập của học viên trên các nền tảng MOOCs, từ đó cung cấp hệ thống cảnh báo sớm.
+        ### Link Đồ Án Nhóm
+        [**ThucHanhDS317.Q11**](https://github.com/MinHeHeHeHe/ThucHanhDS317.Q11)
         """)
         
     with tab2:
-        st.info("Nội dung tab Ứng dụng đang được cập nhật...")
+        st.markdown("""
+        ### Hệ thống cảnh báo sớm (Early Warning System)
+        Phát hiện sớm học viên có nguy cơ bỏ học và gửi cảnh báo cho giảng viên hoặc hệ thống quản lý học tập.
+
+        ### Cá nhân hóa học tập
+        Hỗ trợ đề xuất tài nguyên, lộ trình hoặc nội dung phù hợp với mức độ tham gia của từng học viên.
+
+        ### Hỗ trợ quản lý đào tạo
+        Giúp nền tảng MOOC đánh giá hiệu quả khóa học, cải thiện tỷ lệ hoàn thành và nâng cao trải nghiệm người học.
+        """)
         
     with tab3:
-        st.info("Nội dung tab Tính mới đang được cập nhật...")
+        st.markdown("""
+        - **Kết hợp đa nguồn dữ liệu**: Hành vi học tập, tương tác, thông tin khóa học và đặc điểm học viên.
+        - **Phân tích hành vi học tập theo chuỗi thời gian**, thay vì chỉ dùng các thống kê tĩnh.
+        - **Áp dụng các mô hình học máy và học sâu** để dự đoán nguy cơ bỏ học ở giai đoạn sớm.
+        - **Hướng đến cảnh báo sớm mang tính cá nhân hóa**, hỗ trợ can thiệp đúng thời điểm cho từng học viên.
+        """)
         
     with tab4:
-        st.info("Nội dung tab Bộ dữ liệu đang được cập nhật...")
+        st.markdown("""
+        ### Nguồn dữ liệu
+        Sử dụng bộ dữ liệu [**MOOCCubeX**](https://github.com/THU-KEG/MOOCCubeX), thu thập từ nền tảng MOOC XuetangX.
+
+        ### Thành phần chính
+        - Thông tin học viên
+        - Thông tin khóa học
+        - Hành vi học tập (xem video, làm bài tập, đăng nhập, thảo luận)
+        - Dữ liệu tương tác và kết quả học tập theo thời gian
+
+        ### Đặc điểm dữ liệu
+        - Quy mô lớn, đa dạng và có tính chuỗi thời gian.
+        - Phù hợp cho các bài toán phân tích hành vi và dự đoán bỏ học.
+        """)

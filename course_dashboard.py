@@ -13,8 +13,9 @@ def navigate_to_main_page():
     st.session_state.current_view = "dashboard"
     st.session_state.course_detail_tabs = "📊 Course Dashboard"
 
-    # clear URL
+    # clear URL but keep theme
     st.query_params["page"] = "dashboard"
+    st.query_params["theme"] = st.session_state.get("theme", "Light")
     for k in ["course_id", "user_id", "view"]:
         if k in st.query_params:
             del st.query_params[k]
@@ -79,9 +80,9 @@ def show():
 
     # header
     st.button("⟨⟨", key="nav_back_main", on_click=navigate_to_main_page)
-    st.markdown(f"### **Khóa học {course.get('course_name','-')}**")
-    st.markdown(f"🏫 Được cung cấp bởi **{course.get('school_name','-')}**")
-    st.markdown(f"Course ID: **{COURSE_ID}**")
+    st.markdown(f"<h1 style='margin-bottom: 0;'>Khóa học {course.get('course_name','-')}</h1>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size: 24px; font-weight: 500; margin-bottom: 5px;'>🏫 Được cung cấp bởi <b>{course.get('school_name','-')}</b></div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-size: 20px; color: #718096; margin-bottom: 10px;'>Course ID: <b>{COURSE_ID}</b></div>", unsafe_allow_html=True)
     st.markdown("---")
 
     # Tabs: luôn có 2 tab + tab user nếu đã chọn user

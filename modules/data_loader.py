@@ -39,14 +39,6 @@ def load_train_data(path: str = 'data/train_validate.csv') -> pd.DataFrame:
         st.error(f"Lỗi: Không tìm thấy file '{path}'.")
         return pd.DataFrame()
 
-@st.cache_data(ttl=3600)
-def load_clean_data(path: str = 'data/df_clean.csv') -> pd.DataFrame:
-    """Load cleaned data for quality analysis."""
-    try:
-        return pd.read_csv(path)
-    except FileNotFoundError:
-        st.error(f"Lỗi: Không tìm thấy file '{path}'.")
-        return pd.DataFrame()
 
 @st.cache_data(ttl=3600)
 def load_test_predictions(phase: int) -> pd.DataFrame:

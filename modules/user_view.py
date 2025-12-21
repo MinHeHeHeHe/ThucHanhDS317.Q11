@@ -28,7 +28,7 @@ def display_user_dashboard(USER_ID: str):
     tok = _theme_tokens()
     bg_color, text_color, grid_color = tok["bg"], tok["text"], tok["grid"]
 
-    st.header(f"Chi tiết học viên: **{USER_ID}**")
+    st.markdown(f"<h1 style='font-size: 42px; font-weight: 800; margin-bottom: 5px;'>Chi tiết học viên: {USER_ID}</h1>", unsafe_allow_html=True)
 
     st.markdown(
         f"""
@@ -172,7 +172,7 @@ def display_user_dashboard(USER_ID: str):
 
     with col_chart_left:
         with st.container(border=True):
-            st.subheader("Phân phối điểm số")
+            st.markdown("<h2 style='font-size: 32px; font-weight: 700; margin-bottom: 20px;'>Phân phối điểm số</h2>", unsafe_allow_html=True)
 
             num_videos_watched = float(user.get("num_videos_P5", 0) or 0)
             total_videos = float(course_data.get("video_count", 0) or 0)
@@ -207,7 +207,7 @@ def display_user_dashboard(USER_ID: str):
                 hovertemplate="<b>%{x}</b><br>Điểm: %{y:.1f}%<extra></extra>"
             )
             fig.update_layout(
-                title=dict(text="<b>Phân phối điểm số</b>", x=0.5, font=dict(size=28, color=text_color)),
+                title=dict(text="<b>Phân phối điểm số</b>", x=0.5, font=dict(size=32, color=text_color)),
                 yaxis=dict(
                     title="<b>Phần trăm (%)</b>",
                     range=[0, 115], # Extra room for labels
@@ -231,7 +231,7 @@ def display_user_dashboard(USER_ID: str):
 
     with col_chart_right:
         with st.container(border=True):
-            st.subheader("Lượt xem video và làm bài tập theo giai đoạn")
+            st.markdown("<h2 style='font-size: 32px; font-weight: 700; margin-bottom: 20px;'>Lượt xem video và làm bài tập theo giai đoạn</h2>", unsafe_allow_html=True)
 
             periods_percent = [0.20, 0.40, 0.60, 0.80, 0.90]
             video_cols = [f"num_events_P{i}" for i in range(1, 6)]
@@ -268,7 +268,7 @@ def display_user_dashboard(USER_ID: str):
                 )
                 fig_monthly.update_traces(marker=dict(size=10, line=dict(width=2)))
                 fig_monthly.update_layout(
-                    title=dict(text="<b>Lượt xem video và làm bài tập theo giai đoạn</b>", x=0.5, font=dict(size=28)),
+                    title=dict(text="<b>Lượt xem video và làm bài tập theo giai đoạn</b>", x=0.5, font=dict(size=32)),
                     xaxis_title=None,
                     yaxis_title="<b>Số lượt</b>",
                     hovermode="x unified",
@@ -301,7 +301,7 @@ def display_user_dashboard(USER_ID: str):
             else:
                 st.info("⚠️ Không có dữ liệu sự kiện theo giai đoạn.")
 
-    st.subheader("Số ngày hoạt động (Nộp bài vs. Xem Video)")
+    st.markdown("<h2 style='font-size: 32px; font-weight: 700; margin-bottom: 20px; margin-top: 30px;'>Số ngày hoạt động (Nộp bài vs. Xem Video)</h2>", unsafe_allow_html=True)
 
     active_days_video_cols = [f"num_active_days_P{i}" for i in range(1, 6)]
     active_days_submit_cols = [f"active_days_P{i}" for i in range(1, 6)]
@@ -309,8 +309,8 @@ def display_user_dashboard(USER_ID: str):
     df_active = pd.DataFrame(
         {
             "Giai đoạn": time_labels,
-            "Video Active Days": [float(user.get(col, 0) or 0) for col in active_days_video_cols],
-            "Submit Active Days": [float(user.get(col, 0) or 0) for col in active_days_submit_cols],
+            "Số ngày hoạt động theo video": [float(user.get(col, 0) or 0) for col in active_days_video_cols],
+            "Số ngày hoạt động theo bài tập": [float(user.get(col, 0) or 0) for col in active_days_submit_cols],
         }
     )
     # Aggregate by Giai đoạn to handle duplicate months
@@ -318,7 +318,7 @@ def display_user_dashboard(USER_ID: str):
 
     df_melted_active = df_active.melt(
         id_vars="Giai đoạn",
-        value_vars=["Video Active Days", "Submit Active Days"],
+        value_vars=["Số ngày hoạt động theo video", "Số ngày hoạt động theo bài tập"],
         var_name="Hoạt động",
         value_name="Số ngày",
     )
@@ -343,7 +343,7 @@ def display_user_dashboard(USER_ID: str):
         cliponaxis=False
     )
     fig_active.update_layout(
-        title=dict(text="<b>Số ngày Hoạt động theo Giai đoạn</b>", x=0.5, font=dict(size=28)),
+        title=dict(text="<b>Số ngày Hoạt động theo Giai đoạn</b>", x=0.5, font=dict(size=32)),
         xaxis_tickangle=0, # Prefer horizontal if labels are short
         plot_bgcolor=bg_color,
         paper_bgcolor=bg_color,
@@ -374,11 +374,32 @@ def display_user_dashboard(USER_ID: str):
     )
     st.plotly_chart(fig_active, use_container_width=True, theme=None)
 
-    status_warning = "⚠️ Cảnh báo: Học viên này có khả năng sẽ bỏ học!" if int(user.get("predict", 0) or 0) == 1 else "✅ Học viên này có khả năng hoàn thành khóa học."
+    is_dropout = int(user.get("predict", 0) or 0) == 1
+    if is_dropout:
+        status_text = "⚠️ Cảnh báo: Học viên này có khả năng sẽ bỏ học!"
+        status_color = "#e53e3e"  # Red
+        status_bg = "rgba(229, 62, 62, 0.1)"
+        status_border = "#feb2b2"
+    else:
+        status_text = "✅ Học viên này có khả năng hoàn thành khóa học."
+        status_color = "#38a169"  # Green
+        status_bg = "rgba(56, 161, 105, 0.1)"
+        status_border = "#9ae6b4"
+
     st.markdown(
         f"""
-        <div style='font-size: 28px; font-weight: 600; color: {text_color}; margin-top: 5px;'>
-            {status_warning}
+        <div style='
+            background-color: {status_bg};
+            border: 2px solid {status_border};
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            text-align: center;
+        '>
+            <div style='font-size: 36px; font-weight: 800; color: {status_color};'>
+                {status_text}
+            </div>
         </div>
     """,
         unsafe_allow_html=True,

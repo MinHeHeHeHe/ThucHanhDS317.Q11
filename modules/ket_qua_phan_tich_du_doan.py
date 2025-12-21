@@ -269,7 +269,7 @@ def show(theme="Light"):
             z-index: 6;
         }}
 
-        /* Dòng 2 sticky */
+        /* ✅ Dòng 2 sticky */
         thead tr:nth-child(2) th {{
             top: var(--head1);
             z-index: 7;
@@ -277,16 +277,36 @@ def show(theme="Light"):
             font-weight: 700;
         }}
 
-        /* ✅ Quan trọng: 2 ô rowspan phải stick top=0 xuyên suốt, tránh bị “kéo xuống” gây lệch */
+        /* ✅ Sticky Horizontal cho cột đầu tiên (Mô hình) */
+        thead tr:nth-child(1) th:first-child {{
+            left: 0;
+            z-index: 10 !important;
+            background: #0b5ed7 !important; /* Header is always solid blue */
+        }}
+
+        /* ✅ Quan trọng: 2 ô rowspan phải stick top=0 xuyên suốt */
         th.rowspan2 {{
             top: 0 !important;
             z-index: 8 !important;
         }}
+        
+        /* Sticky LEFT cho cột Mô hình (Header) */
+        th.rowspan2:first-child {{
+            left: 0;
+            z-index: 11 !important;
+            background: #0b5ed7 !important;
+        }}
 
         .model {{
+            position: sticky !important;
+            left: 0;
+            z-index: 5;
             font-weight: 800;
-            background: rgba(11,94,215,0.18);
+            background: {colors['bg_secondary']} !important; /* USE SOLID COLOR (Secondary BG) */
+            color: {colors['text_primary']} !important;      /* Explicit text color */
             min-width: 160px;
+            border-right: 2px solid #0b5ed7 !important;
+            opacity: 1 !important;
         }}
 
         .params {{
@@ -363,8 +383,13 @@ def show(theme="Light"):
     components.html(html_table, height=800, scrolling=False)
 
     # phần dưới giữ nguyên
-    st.markdown("### Model Categories")
+    st.markdown("<h2 style='font-size: 32px; margin-bottom: 20px;'>Model Categories</h2>", unsafe_allow_html=True)
     c1, c2, c3 = st.columns(3)
-    c1.markdown("**Traditional ML**\n- CHƯA BỔ SUNG")
-    c2.markdown("**Boosting**\n- CHƯA BỔ SUNG")
-    c3.markdown("**Deep Learning**\n- CHƯA BỔ SUNG")
+    c1.markdown("<h3 style='font-size: 24px;'>Traditional Machine Learning</h3>", unsafe_allow_html=True)
+    c1.markdown("- Random Forest\n- Linear SVM\n- KNN")
+    
+    c2.markdown("<h3 style='font-size: 24px;'>Boosting</h3>", unsafe_allow_html=True)
+    c2.markdown("- XGBoost\n- LightGBM\n- CatBoost")
+    
+    c3.markdown("<h3 style='font-size: 24px;'>Deep Learning</h3>", unsafe_allow_html=True)
+    c3.markdown("- LSTM\n- ANN-LSTM\n- TabNet")

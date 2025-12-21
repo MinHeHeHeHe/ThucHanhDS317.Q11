@@ -11,7 +11,7 @@ from modules.styles import get_main_css, get_header_css
 from modules.theme_system import get_dynamic_css, get_theme_colors
 
 # Load data via centralized module
-from modules.data_loader import load_train_data, load_courses, load_clean_data
+from modules.data_loader import load_train_data, load_courses
 
 # Import course_dashboard
 import course_dashboard as course_dashboard
@@ -196,10 +196,16 @@ with st.sidebar:
 
 
 if "theme" not in st.session_state:
-    # Always default to Light on first load/reload
-    st.session_state.theme = "Light"
-    st.query_params["theme"] = "Light"
+    # 1. Try to get from URL
+    url_theme = st.query_params.get("theme", None)
+    if url_theme in ["Light", "Dark"]:
+        st.session_state.theme = url_theme
+    else:
+        # 2. Default to Light
+        st.session_state.theme = "Light"
+        st.query_params["theme"] = "Light"
 else:
+    # Ensure URL is in sync with session state (if not already handled by a toggle)
     if "theme" not in st.query_params or st.query_params["theme"] != st.session_state.theme:
         st.query_params["theme"] = st.session_state.theme
 
@@ -445,7 +451,7 @@ else:
         tong_quan_hien_tai.show(df, st.session_state.theme)
 
     elif current_tab == "📈 Chất lượng dữ liệu":
-        chat_luong_du_lieu.show(load_clean_data(), st.session_state.theme)
+        chat_luong_du_lieu.show(None, st.session_state.theme)
 
     elif current_tab == "📚 Khóa học":
         khoa_hoc.show(df_courses, st.session_state.theme)
