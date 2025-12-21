@@ -251,7 +251,8 @@ def show(df, theme='Light'):
         hole=0.5,
         marker=dict(colors=colors_pie),
         textinfo='percent+label',
-        textfont=dict(color='#ffffff', size=22, family='Arial, sans-serif')
+        textposition='inside',
+        textfont=dict(color=text_color, size=22, family='Arial, sans-serif')
     )])
 
     total_count = len(df)

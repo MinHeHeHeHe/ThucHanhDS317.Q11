@@ -1,6 +1,6 @@
 # BI MOOCCubeX Dashboard
 
-Ứng dụng BI Dashboard dành cho việc phân tích và dự đoán dữ liệu học tập từ MOOCCubeX, được xây dựng trên nền tảng Streamlit.
+Ứng dụng BI Dashboard dành cho việc phân tích và dự đoán dữ liệu học tập từ MOOCCubeX, được xây dựng trên nền tảng Streamlit. Với đề tài Dự đoán khả năng bỏ học của học viên trong các khóa học MOOC bằng bài toán phân loại 2 nhãn (0: không bỏ học, 1: bỏ học).
 
 ## 🛠️ Cấu trúc cài đặt (Installation)
 
